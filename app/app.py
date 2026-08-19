@@ -154,6 +154,8 @@ app_ui = ui.page_sidebar(
             .result-banner { border-radius: 0.65rem; padding: 0.8rem 0.95rem; margin-top: 0.8rem; }
             .result-pass { background: #e8f7ee; color: #17633a; border: 1px solid #b9e5c9; }
             .result-fail { background: #fff1f0; color: #8e2a23; border: 1px solid #f0c6c2; }
+            .sensor-design-equation { font-size: 1rem; overflow-x: auto; }
+            .sensor-design-equation mjx-container[display="true"] { margin: 0.55rem 0 !important; }
             .sidebar-note, .assumption-list, .finite-grid-note { color: var(--muted); font-size: 0.9rem; }
             .pending { color: #8a5c00; margin-top: 0.6rem; font-size: 0.9rem; }
             .applied { color: #246642; margin-top: 0.6rem; font-size: 0.9rem; }
@@ -437,19 +439,23 @@ def server(input: Inputs, output: Outputs, session: Session) -> None:
     @render.ui
     def minimum_sensors():
         result = optimum()
+        design_criterion = ui.div(
+            ui.HTML(
+                r"\[\min\;N_r\quad\text{s.t.}\quad"
+                r"\bar q_{\Delta^\Pi_\infty}\ge q_{\mathrm{target}}.\]"
+            ),
+            class_="sensor-design-equation",
+        )
         if result is None:
             return ui.div(
                 ui.h3(f"> {MAXIMUM_SENSORS}"),
+                design_criterion,
                 ui.p("The analytical lower bound does not reach the selected target within the search range."),
             )
-        sensor_count, clarity = result
+        sensor_count, _ = result
         return ui.div(
             ui.h3(str(sensor_count)),
-            ui.p(
-                "First ",
-                ui.HTML(r"\(N_r\)"),
-                f" with bound ≥ target; bound = {clarity:.4f}.",
-            ),
+            design_criterion,
         )
 
     @render.plot
