@@ -148,12 +148,16 @@ app_ui = ui.page_sidebar(
             .hero p { color: var(--muted); margin-bottom: 0; }
             .card { border: 1px solid #e2e7f0; box-shadow: 0 5px 18px rgba(25, 42, 72, 0.055); }
             .card-header { background: var(--panel); font-weight: 650; border-bottom-color: #e8ecf3; }
-            .metric-label { color: var(--muted); font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.035em; }
-            .metric-value { font-size: 1.72rem; line-height: 1.15; font-weight: 700; margin-top: 0.15rem; }
-            .metric-detail { color: var(--muted); font-size: 0.9rem; margin-top: 0.3rem; }
-            .result-banner { border-radius: 0.65rem; padding: 0.8rem 0.95rem; margin-top: 0.8rem; }
-            .result-pass { background: #e8f7ee; color: #17633a; border: 1px solid #b9e5c9; }
-            .result-fail { background: #fff1f0; color: #8e2a23; border: 1px solid #f0c6c2; }
+            .metric-row { display: flex; align-items: baseline; flex-wrap: nowrap; gap: 0.25rem; margin-top: 0.9rem; font-size: 0.95rem; line-height: 1.5; white-space: nowrap; }
+            .metric-label { color: var(--ink); font-size: 0.95rem; font-weight: 650; }
+            .metric-inline-value { font-variant-numeric: tabular-nums; }
+            .metric-detail { color: var(--muted); font-size: 0.86rem; margin-top: 0.15rem; white-space: nowrap; }
+            .result-banner { display: flex; align-items: center; gap: 0.55rem; border-radius: 0.65rem; padding: 0.85rem 1rem; margin-top: 0.95rem; font-size: 0.95rem; }
+            .result-icon { display: inline-grid; flex: 0 0 auto; place-items: center; width: 1.35rem; height: 1.35rem; border-radius: 0.25rem; color: #fff; font-weight: 700; line-height: 1; }
+            .result-pass .result-icon { background: #16a34a; }
+            .result-fail .result-icon { background: #c2413b; }
+            .result-pass { background: #eaf7ed; color: #17633a; border: 0; }
+            .result-fail { background: #fff1f0; color: #8e2a23; border: 0; }
             .sensor-design-equation { font-size: 1rem; overflow-x: auto; }
             .sensor-design-equation mjx-container[display="true"] { margin: 0.55rem 0 !important; }
             .sidebar-note, .assumption-list, .finite-grid-note { color: var(--muted); font-size: 0.9rem; }
@@ -219,31 +223,40 @@ app_ui = ui.page_sidebar(
                 ),
                 ui.hr(),
                 ui.div(
-                    ui.div(parameter_label("Sensing Parameter", r"\theta"), class_="metric-label"),
-                    ui.output_text("theta_value"),
-                    class_="metric-value",
+                    ui.span(
+                        parameter_label("Sensing Parameter", r"\theta"),
+                        ":",
+                        class_="metric-label",
+                    ),
+                    ui.span(
+                        ui.output_text("theta_value", inline=True),
+                        class_="metric-inline-value",
+                    ),
+                    class_="metric-row",
                 ),
                 ui.div(ui.output_ui("noise_values"), class_="metric-detail"),
-                ui.hr(),
                 ui.div(
-                    ui.div(
+                    ui.span(
                         parameter_label(
                             "Steady-State Clarity Lower Bound",
                             r"\bar q_{\Delta^\Pi_\infty}",
                         ),
+                        ":",
                         class_="metric-label",
                     ),
-                    ui.output_text("clarity_value"),
-                    class_="metric-value",
+                    ui.span(
+                        ui.output_text("clarity_value", inline=True),
+                        class_="metric-inline-value",
+                    ),
+                    class_="metric-row",
                 ),
-                ui.div(r"\(\bar q_{\Delta^\Pi_\infty}\), finite-grid continuous-time result", class_="metric-detail"),
                 ui.output_ui("target_status"),
             ),
             ui.card(
                 ui.card_header("Interactive Sensor-Count Design Curve"),
                 ui.output_plot("clarity_plot", height="390px"),
             ),
-            col_widths=(4, 8),
+            col_widths=(6, 6),
         ),
         ui.layout_columns(
             ui.card(
@@ -411,8 +424,8 @@ def server(input: Inputs, output: Outputs, session: Session) -> None:
         sigma_m_squared = float(input.sigma_m_squared())
         return ui.span(
             ui.HTML(
-                rf"\(\sigma_m={np.sqrt(sigma_m_squared):.4g};\ "
-                rf"\text{{derived }}\sigma_c^2=\sigma_m^2\Delta t={sigma_c_squared:.4g}\)"
+                rf"\(\sigma_m={np.sqrt(sigma_m_squared):.4g},\quad "
+                rf"\sigma_c^2={sigma_c_squared:.4g}\)"
             )
         )
 
@@ -426,13 +439,13 @@ def server(input: Inputs, output: Outputs, session: Session) -> None:
         clarity = current_clarity()
         if clarity >= target:
             return ui.div(
-                ui.strong("Continuous-time bound meets the target"),
-                ui.div(f"{clarity:.3f} ≥ {target:.3f}"),
+                ui.span("✓", class_="result-icon", aria_hidden="true"),
+                ui.span(ui.strong("Target Met!"), f" ({clarity:.3f} ≥ {target:.3f})"),
                 class_="result-banner result-pass",
             )
         return ui.div(
-            ui.strong("Continuous-time bound is below the target"),
-            ui.div(f"{clarity:.3f} < {target:.3f}"),
+            ui.span("×", class_="result-icon", aria_hidden="true"),
+            ui.span(ui.strong("Target Not Met"), f" ({clarity:.3f} < {target:.3f})"),
             class_="result-banner result-fail",
         )
 
