@@ -148,9 +148,9 @@ app_ui = ui.page_sidebar(
             .hero p { color: var(--muted); margin-bottom: 0; }
             .card { border: 1px solid #e2e7f0; box-shadow: 0 5px 18px rgba(25, 42, 72, 0.055); }
             .card-header { background: var(--panel); font-weight: 650; border-bottom-color: #e8ecf3; }
-            .metric-row { display: flex; align-items: baseline; flex-wrap: nowrap; gap: 0.25rem; margin-top: 0.9rem; font-size: 0.95rem; line-height: 1.5; white-space: nowrap; }
-            .metric-label { color: var(--ink); font-size: 0.95rem; font-weight: 650; }
-            .metric-inline-value { font-variant-numeric: tabular-nums; }
+            .metric-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 0.35rem; margin-top: 0.9rem; font-size: 0.88rem; line-height: 1.5; }
+            .metric-label { color: var(--ink); font-size: 0.88rem; font-weight: 650; }
+            .metric-inline-value { justify-self: end; white-space: nowrap; font-variant-numeric: tabular-nums; }
             .metric-detail { color: var(--muted); font-size: 0.86rem; margin-top: 0.15rem; white-space: nowrap; }
             .result-banner { display: flex; align-items: center; gap: 0.55rem; border-radius: 0.65rem; padding: 0.85rem 1rem; margin-top: 0.95rem; font-size: 0.95rem; }
             .result-icon { display: inline-grid; flex: 0 0 auto; place-items: center; width: 1.35rem; height: 1.35rem; border-radius: 0.25rem; color: #fff; font-weight: 700; line-height: 1; }
@@ -160,7 +160,7 @@ app_ui = ui.page_sidebar(
             .result-fail { background: #fff1f0; color: #8e2a23; border: 0; }
             .sensor-design-equation { font-size: 1rem; overflow-x: auto; }
             .sensor-design-equation mjx-container[display="true"] { margin: 0.55rem 0 !important; }
-            .design-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: "configuration curve" "minimum curve"; grid-template-rows: auto minmax(0, auto); gap: 1rem; align-items: stretch; margin-bottom: 1rem; }
+            .design-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); grid-template-areas: "configuration curve" "minimum curve"; grid-template-rows: auto minmax(0, auto); gap: 1rem; align-items: stretch; margin-bottom: 1rem; }
             .design-grid > .card { margin: 0; }
             .sensing-card { grid-area: configuration; }
             .minimum-card { grid-area: minimum; }
@@ -256,10 +256,9 @@ app_ui = ui.page_sidebar(
                 ui.div(ui.output_ui("noise_values"), class_="metric-detail"),
                 ui.div(
                     ui.span(
-                        parameter_label(
-                            "Steady-State Clarity Lower Bound",
-                            r"\bar q_{\Delta^\Pi_\infty}",
-                        ),
+                        "Steady-State Clarity Lower Bound",
+                        ui.br(),
+                        ui.HTML(r"\((\bar q_{\Delta^\Pi_\infty})\)"),
                         ":",
                         class_="metric-label",
                     ),
