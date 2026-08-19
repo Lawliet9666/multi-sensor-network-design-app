@@ -129,7 +129,6 @@ app_ui = ui.page_sidebar(
             ui.card(
                 ui.card_header("Interactive Sensor-Count Design Curve"),
                 ui.output_plot("clarity_plot", height="390px"),
-                ui.p("The curve is the analytical lower bound only; it is not the Monte Carlo estimate shown in the paper's Fig. 4(a).", class_="finite-grid-note"),
             ),
             col_widths=(4, 8),
         ),
