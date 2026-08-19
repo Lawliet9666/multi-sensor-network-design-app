@@ -66,7 +66,6 @@ def build_environment(
 app_ui = ui.page_sidebar(
     ui.sidebar(
         ui.h4("Environment"),
-        ui.p("Parameters are applied together because the spatial eigendecomposition is the expensive step.", class_="sidebar-note"),
         ui.input_numeric("temporal_length_scale", "Temporal length scale lₜ [min]", value=60.0, min=0.001, step=1.0),
         ui.input_numeric("temporal_sigma", "Temporal kernel std. σₜ", value=2.0, min=0.001, step=0.1),
         ui.input_numeric("spatial_length_scale", "Spatial length scale lₛ [km]", value=2.0, min=0.001, step=0.1),
