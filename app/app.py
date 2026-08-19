@@ -63,16 +63,59 @@ def build_environment(
     )
 
 
+def parameter_label(text: str, symbol: str, unit: str | None = None):
+    """Build a consistent text, LaTeX-symbol, and optional-unit label."""
+
+    suffix = f" [{unit}]" if unit is not None else ""
+    return ui.span(text, " ", ui.HTML(rf"\(({symbol})\)"), suffix)
+
+
 app_ui = ui.page_sidebar(
     ui.sidebar(
-        ui.h4("Environment"),
-        ui.input_numeric("temporal_length_scale", "Temporal length scale lₜ [min]", value=60.0, min=0.001, step=1.0),
-        ui.input_numeric("temporal_sigma", "Temporal kernel std. σₜ", value=2.0, min=0.001, step=0.1),
-        ui.input_numeric("spatial_length_scale", "Spatial length scale lₛ [km]", value=2.0, min=0.001, step=0.1),
-        ui.input_numeric("spatial_sigma", "Spatial kernel std. σₛ", value=1.0, min=0.001, step=0.1),
+        ui.h4("1. Environment Parameters"),
+        ui.input_numeric(
+            "temporal_length_scale",
+            parameter_label("Temporal Length Scale", r"\ell_t", "min"),
+            value=60.0,
+            min=0.001,
+            step=1.0,
+        ),
+        ui.input_numeric(
+            "temporal_sigma",
+            parameter_label("Temporal Kernel Std", r"\sigma_t"),
+            value=2.0,
+            min=0.001,
+            step=0.1,
+        ),
+        ui.input_numeric(
+            "spatial_length_scale",
+            parameter_label("Spatial Length Scale", r"\ell_s", "km"),
+            value=2.0,
+            min=0.001,
+            step=0.1,
+        ),
+        ui.input_numeric(
+            "spatial_sigma",
+            parameter_label("Spatial Kernel Std", r"\sigma_s"),
+            value=1.0,
+            min=0.001,
+            step=0.1,
+        ),
         ui.hr(),
-        ui.input_numeric("domain_size", "Square-domain side length L [km]", value=5.0, min=0.25, step=0.25),
-        ui.input_select("grid_spacing", "Grid spacing δ [km]", choices={"1.0": "1.0", "0.5": "0.5", "0.25": "0.25"}, selected="0.5"),
+        ui.h4("2. Grid Settings"),
+        ui.input_numeric(
+            "domain_size",
+            parameter_label("Square-Domain Side Length", "L", "km"),
+            value=5.0,
+            min=0.25,
+            step=0.25,
+        ),
+        ui.input_select(
+            "grid_spacing",
+            parameter_label("Grid Spacing", r"\delta", "km"),
+            choices={"1.0": "1.0", "0.5": "0.5", "0.25": "0.25"},
+            selected="0.5",
+        ),
         ui.input_action_button("apply_environment", "Apply environment", class_="btn-primary w-100"),
         ui.output_ui("environment_status"),
         width=350,
@@ -81,6 +124,19 @@ app_ui = ui.page_sidebar(
     ui.head_content(
         ui.tags.meta(name="description", content="Interactive continuous-time clarity lower-bound calculator for randomized sensor networks."),
         ui.tags.script(src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js", async_="true"),
+        ui.tags.script(
+            """
+            window.addEventListener("load", () => {
+                window.jQuery?.(document).on("shiny:value", (event) => {
+                    window.setTimeout(() => {
+                        if (window.MathJax?.typesetPromise) {
+                            window.MathJax.typesetPromise([event.target]);
+                        }
+                    }, 0);
+                });
+            });
+            """
+        ),
         ui.tags.style(
             """
             :root { --accent: #2f6fdd; --ink: #172033; --muted: #657085; --panel: #ffffff; }
@@ -125,15 +181,55 @@ app_ui = ui.page_sidebar(
         ui.layout_columns(
             ui.card(
                 ui.card_header("Sensing configuration"),
-                ui.input_numeric("sensor_count", "Number of sensors Nᵣ", value=7, min=1, max=500, step=1),
-                ui.input_numeric("sigma_m_squared", "Measurement noise variance σm²", value=10.0, min=0.0001, step=0.5),
-                ui.input_numeric("sampling_interval", "Sampling interval Δt [min]", value=0.02, min=0.0001, step=0.01),
-                ui.input_slider("target_clarity", "Target clarity q_target", min=0.1, max=0.95, value=0.7, step=0.05),
+                ui.input_numeric(
+                    "sensor_count",
+                    parameter_label("Number of Sensors", r"N_r"),
+                    value=7,
+                    min=1,
+                    max=500,
+                    step=1,
+                ),
+                ui.input_numeric(
+                    "sigma_m_squared",
+                    parameter_label("Measurement Noise Var", r"\sigma_m^2"),
+                    value=10.0,
+                    min=0.0001,
+                    step=0.5,
+                ),
+                ui.input_numeric(
+                    "sampling_interval",
+                    parameter_label("Sampling Interval", r"\Delta t", "min"),
+                    value=0.02,
+                    min=0.0001,
+                    step=0.01,
+                ),
+                ui.input_slider(
+                    "target_clarity",
+                    parameter_label("Target Clarity", r"q_{\mathrm{target}}"),
+                    min=0.1,
+                    max=0.95,
+                    value=0.7,
+                    step=0.05,
+                ),
                 ui.hr(),
-                ui.div(ui.div("Sensing parameter θ", class_="metric-label"), ui.output_text("theta_value"), class_="metric-value"),
-                ui.div(ui.output_text("noise_values"), class_="metric-detail"),
+                ui.div(
+                    ui.div(parameter_label("Sensing Parameter", r"\theta"), class_="metric-label"),
+                    ui.output_text("theta_value"),
+                    class_="metric-value",
+                ),
+                ui.div(ui.output_ui("noise_values"), class_="metric-detail"),
                 ui.hr(),
-                ui.div(ui.div("Steady-state clarity lower bound", class_="metric-label"), ui.output_text("clarity_value"), class_="metric-value"),
+                ui.div(
+                    ui.div(
+                        parameter_label(
+                            "Steady-State Clarity Lower Bound",
+                            r"\bar q_{\Delta^\Pi_\infty}",
+                        ),
+                        class_="metric-label",
+                    ),
+                    ui.output_text("clarity_value"),
+                    class_="metric-value",
+                ),
                 ui.div(r"\(\bar q_{\Delta^\Pi_\infty}\), finite-grid continuous-time result", class_="metric-detail"),
                 ui.output_ui("target_status"),
             ),
@@ -153,7 +249,13 @@ app_ui = ui.page_sidebar(
                 ui.p(r"Theorem 7 and Eq. (17) give the closed-form Riccati solution. Theorem 20 characterizes the grid-refinement limit of \(\bar q_{\Delta^\Pi_\infty}\)."),
                 ui.p(r"This app computes its finite-grid counterpart with \(\theta=N_r/\sigma_c^2=N_r/(\sigma_m^2\Delta t)\)."),
                 ui.tags.ul(
-                    ui.tags.li("Matérn-1/2 spatial and temporal kernels with B₀ = 1 and q_c = 1."),
+                    ui.tags.li(
+                        "Matérn-1/2 spatial and temporal kernels with ",
+                        ui.HTML(r"\(B_0=1\)"),
+                        " and ",
+                        ui.HTML(r"\(q_c=1\)"),
+                        ".",
+                    ),
                     ui.tags.li("Sensors are sampled independently and uniformly from the grid at each sensing time."),
                     ui.tags.li("The spatial domain is square and sensing locations lie on the grid."),
                     ui.tags.li("The result is a continuous-time steady-state clarity lower bound, not a discrete-filter realization."),
@@ -215,7 +317,12 @@ def server(input: Inputs, output: Outputs, session: Session) -> None:
         )
         if not np.allclose(requested, applied, rtol=0.0, atol=1e-12):
             return ui.div("Changes pending — click Apply environment.", class_="pending")
-        return ui.div(f"Applied grid: N_g = {environment.spectrum.grid_points}", class_="applied")
+        return ui.div(
+            "Applied Grid: ",
+            ui.HTML(r"\(N_g\)"),
+            f" = {environment.spectrum.grid_points}",
+            class_="applied",
+        )
 
     @reactive.calc
     def current_inputs() -> tuple[int, float, float, float]:
@@ -261,13 +368,15 @@ def server(input: Inputs, output: Outputs, session: Session) -> None:
         sensor_count, sigma_c_squared, _, _ = current_inputs()
         return f"{sensing_parameter(sensor_count, sigma_c_squared):.3f}"
 
-    @render.text
-    def noise_values() -> str:
+    @render.ui
+    def noise_values():
         _, sigma_c_squared, _, _ = current_inputs()
         sigma_m_squared = float(input.sigma_m_squared())
-        return (
-            f"σm = {np.sqrt(sigma_m_squared):.4g}; "
-            f"derived σc² = σm²Δt = {sigma_c_squared:.4g}"
+        return ui.span(
+            ui.HTML(
+                rf"\(\sigma_m={np.sqrt(sigma_m_squared):.4g};\ "
+                rf"\text{{derived }}\sigma_c^2=\sigma_m^2\Delta t={sigma_c_squared:.4g}\)"
+            )
         )
 
     @render.text
@@ -301,7 +410,11 @@ def server(input: Inputs, output: Outputs, session: Session) -> None:
         sensor_count, clarity = result
         return ui.div(
             ui.h3(str(sensor_count)),
-            ui.p(f"First Nᵣ with bound ≥ target; bound = {clarity:.4f}."),
+            ui.p(
+                "First ",
+                ui.HTML(r"\(N_r\)"),
+                f" with bound ≥ target; bound = {clarity:.4f}.",
+            ),
         )
 
     @render.plot
