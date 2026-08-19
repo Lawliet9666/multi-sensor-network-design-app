@@ -88,6 +88,7 @@ app_ui = ui.page_sidebar(
             .bslib-page-title { font-weight: 650; }
             .hero { padding: 0.25rem 0 1rem; }
             .hero h1 { font-size: clamp(1.7rem, 3vw, 2.45rem); font-weight: 700; margin-bottom: 0.3rem; }
+            .hero h2 { font-size: 1.2rem; font-weight: 650; margin: 0 0 0.35rem; }
             .hero p { color: var(--muted); max-width: 820px; margin-bottom: 0; }
             .card { border: 1px solid #e2e7f0; box-shadow: 0 5px 18px rgba(25, 42, 72, 0.055); }
             .card-header { background: var(--panel); font-weight: 650; border-bottom-color: #e8ecf3; }
@@ -108,7 +109,17 @@ app_ui = ui.page_sidebar(
     ui.div(
         ui.div(
             ui.h1("Kalman–Bucy Filtering with Randomized Sensing"),
-            ui.p("A browser-based design tool for the finite-grid continuous-time lower bound on expected spatially averaged clarity."),
+            ui.h2("Fundamental Limits & Sensor Network Design"),
+            ui.p(
+                "This tool implements the theoretical framework from ",
+                ui.strong(
+                    '"Kalman-Bucy Filtering with Randomized Sensing: Fundamental Limits and Sensor Network Design for Field Estimation", '
+                    "Xinyi Wang, Devansh R. Agrawal, Dimitra Panagou"
+                ),
+                ". It calculates the ",
+                ui.strong("Steady-State Lower Bound of Averaged Expected Clarity"),
+                r" \(\bar q_{\Delta^\Pi_\infty}\) to help design sensor networks.",
+            ),
             class_="hero",
         ),
         ui.layout_columns(
