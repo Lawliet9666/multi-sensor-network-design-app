@@ -172,8 +172,6 @@ app_ui = ui.page_sidebar(
             .theory-heading { color: var(--ink); font-size: 1rem; font-weight: 650; margin: 0 0 0.75rem; }
             .assumption-list { color: var(--muted); font-size: 0.9rem; line-height: 1.55; margin: 0; padding-left: 1.2rem; }
             .assumption-list li + li { margin-top: 0.35rem; }
-            .conclusion-copy { color: #354056; font-size: 0.9rem; line-height: 1.55; }
-            .conclusion-copy p { margin-bottom: 0.65rem; }
             .sidebar-note { color: var(--muted); font-size: 0.9rem; }
             .pending { color: #8a5c00; margin-top: 0.6rem; font-size: 0.9rem; }
             .applied { color: #246642; margin-top: 0.6rem; font-size: 0.9rem; }
@@ -316,23 +314,22 @@ app_ui = ui.page_sidebar(
                 ),
                 ui.tags.section(
                     ui.h5("Conclusion", class_="theory-heading"),
-                    ui.div(
-                        ui.p(
-                            "Under these assumptions, Theorem 7 and Eq. (17) give the closed-form "
-                            "continuous-time steady-state covariance upper bound. Theorem 15 then gives "
-                            "the finite-grid lower bound on expected spatially averaged clarity ",
+                    ui.tags.ul(
+                        ui.tags.li(
+                            "Theorem 7 and Eq. (17) give the continuous-time steady-state covariance "
+                            "upper bound; Theorem 15 gives the finite-grid clarity lower bound ",
                             ui.HTML(r"\(\bar q_{\Delta^\Pi_\infty}\)"),
                             ".",
                         ),
-                        ui.p(
-                            "Theorem 20 shows that, with the environment fixed, this clarity lower "
-                            "bound converges to a finite grid-independent limit as ",
+                        ui.tags.li(
+                            "Theorem 20 shows that this clarity lower bound converges to a finite "
+                            "grid-independent limit as ",
                             ui.HTML(r"\(\delta\to0\)"),
-                            ". The limit is governed by ",
+                            ", governed by ",
                             ui.HTML(r"\(\theta=N_r/\sigma_c^2=N_r/(\sigma_m^2\Delta t)\)"),
                             ".",
                         ),
-                        class_="conclusion-copy",
+                        class_="assumption-list",
                     ),
                     class_="theory-block",
                 ),
