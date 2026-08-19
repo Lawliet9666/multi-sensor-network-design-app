@@ -175,7 +175,6 @@ app_ui = ui.page_sidebar(
             .assumption-list li + li { margin-top: 0.35rem; }
             .conclusion-copy { color: #354056; font-size: 0.9rem; line-height: 1.55; }
             .conclusion-copy p { margin-bottom: 0.65rem; }
-            .scope-note { color: var(--muted); background: #eef3fa; border-radius: 0.5rem; padding: 0.65rem 0.75rem; font-size: 0.86rem; line-height: 1.45; }
             .sidebar-note { color: var(--muted); font-size: 0.9rem; }
             .pending { color: #8a5c00; margin-top: 0.6rem; font-size: 0.9rem; }
             .applied { color: #246642; margin-top: 0.6rem; font-size: 0.9rem; }
@@ -336,11 +335,6 @@ app_ui = ui.page_sidebar(
                             ".",
                         ),
                         class_="conclusion-copy",
-                    ),
-                    ui.div(
-                        ui.strong("Scope: "),
-                        "finite-grid continuous-time steady-state lower bound; not a discrete-filter realization or Monte Carlo estimate.",
-                        class_="scope-note",
                     ),
                     class_="theory-block",
                 ),
