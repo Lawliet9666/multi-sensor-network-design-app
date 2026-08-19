@@ -11,7 +11,7 @@ from shiny import App, Inputs, Outputs, Session, reactive, render, ui
 from model import (
     SpatialSpectrum,
     compute_spatial_spectrum,
-    discrete_measurement_noise,
+    continuous_measurement_noise_intensity,
     minimum_sensor_count,
     sensing_parameter,
     steady_state_clarity_lower_bound,
@@ -116,7 +116,7 @@ app_ui = ui.page_sidebar(
             ui.card(
                 ui.card_header("Sensing configuration"),
                 ui.input_numeric("sensor_count", "Number of sensors Nᵣ", value=7, min=1, max=500, step=1),
-                ui.input_numeric("sigma_c_squared", "Continuous-time noise intensity σc²", value=0.2, min=0.0001, step=0.05),
+                ui.input_numeric("sigma_m_squared", "Measurement noise variance σm²", value=10.0, min=0.0001, step=0.5),
                 ui.input_numeric("sampling_interval", "Sampling interval Δt [min]", value=0.02, min=0.0001, step=0.01),
                 ui.input_slider("target_clarity", "Target clarity q_target", min=0.1, max=0.95, value=0.7, step=0.05),
                 ui.hr(),
@@ -211,10 +211,12 @@ def server(input: Inputs, output: Outputs, session: Session) -> None:
     @reactive.calc
     def current_inputs() -> tuple[int, float, float, float]:
         sensor_count_value = float(input.sensor_count())
-        sigma_c_squared = float(input.sigma_c_squared())
+        sigma_m_squared = float(input.sigma_m_squared())
         sampling_interval = float(input.sampling_interval())
         target = float(input.target_clarity())
-        discrete_measurement_noise(sigma_c_squared, sampling_interval)
+        sigma_c_squared = continuous_measurement_noise_intensity(
+            sigma_m_squared, sampling_interval
+        )
         sensing_parameter(sensor_count_value, sigma_c_squared)
         if not 0.0 < target < 1.0:
             raise ValueError("Target clarity must lie strictly between zero and one.")
@@ -252,9 +254,12 @@ def server(input: Inputs, output: Outputs, session: Session) -> None:
 
     @render.text
     def noise_values() -> str:
-        _, sigma_c_squared, sampling_interval, _ = current_inputs()
-        variance, standard_deviation = discrete_measurement_noise(sigma_c_squared, sampling_interval)
-        return f"Derived σm² = {variance:.4g}; σm = {standard_deviation:.4g}"
+        _, sigma_c_squared, _, _ = current_inputs()
+        sigma_m_squared = float(input.sigma_m_squared())
+        return (
+            f"σm = {np.sqrt(sigma_m_squared):.4g}; "
+            f"derived σc² = σm²Δt = {sigma_c_squared:.4g}"
+        )
 
     @render.text
     def clarity_value() -> str:

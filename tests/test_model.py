@@ -13,6 +13,7 @@ sys.path.insert(0, str(APP_DIRECTORY))
 
 from model import (  # noqa: E402
     compute_spatial_spectrum,
+    continuous_measurement_noise_intensity,
     discrete_measurement_noise,
     minimum_sensor_count,
     steady_state_clarity_lower_bound,
@@ -51,16 +52,25 @@ class PaperRegressionTests(unittest.TestCase):
                 self.assertIsNotNone(result)
                 self.assertEqual(result[0], expected_count)
 
-    def test_fixed_sigma_c_makes_bound_independent_of_sampling_interval(self) -> None:
-        variance_a, standard_deviation_a = discrete_measurement_noise(0.2, 0.02)
-        variance_b, standard_deviation_b = discrete_measurement_noise(0.2, 0.05)
-        self.assertAlmostEqual(variance_a, 10.0)
-        self.assertAlmostEqual(standard_deviation_a, math.sqrt(10.0))
-        self.assertAlmostEqual(variance_b, 4.0)
-        self.assertAlmostEqual(standard_deviation_b, 2.0)
-        self.assertAlmostEqual(variance_a * 0.02, 0.2)
-        self.assertAlmostEqual(variance_b * 0.05, 0.2)
-        self.assertAlmostEqual(7 / (variance_a * 0.02), 7 / (variance_b * 0.05))
+    def test_measurement_variance_input_sets_continuous_intensity(self) -> None:
+        sigma_c_squared_a = continuous_measurement_noise_intensity(10.0, 0.02)
+        sigma_c_squared_b = continuous_measurement_noise_intensity(10.0, 0.05)
+        self.assertAlmostEqual(sigma_c_squared_a, 0.2)
+        self.assertAlmostEqual(sigma_c_squared_b, 0.5)
+
+        variance, standard_deviation = discrete_measurement_noise(
+            sigma_c_squared_a, 0.02
+        )
+        self.assertAlmostEqual(variance, 10.0)
+        self.assertAlmostEqual(standard_deviation, math.sqrt(10.0))
+
+        clarity_a = steady_state_clarity_lower_bound(
+            7, sigma_c_squared_a, 60.0, 2.0, self.spectrum.eigenvalues
+        )
+        clarity_b = steady_state_clarity_lower_bound(
+            7, sigma_c_squared_b, 60.0, 2.0, self.spectrum.eigenvalues
+        )
+        self.assertGreater(clarity_a, clarity_b)
 
     def test_spectrum_has_expected_shape_and_is_finite(self) -> None:
         self.assertEqual(self.spectrum.grid_points, 121)
@@ -73,6 +83,8 @@ class PaperRegressionTests(unittest.TestCase):
             compute_spatial_spectrum(5.0, 0.3, 1.0, 2.0)
         with self.assertRaisesRegex(ValueError, "greater than zero"):
             discrete_measurement_noise(0.2, 0.0)
+        with self.assertRaisesRegex(ValueError, "greater than zero"):
+            continuous_measurement_noise_intensity(0.0, 0.02)
         with self.assertRaisesRegex(ValueError, "positive integer"):
             steady_state_clarity_lower_bound(
                 7.5, 0.2, 60.0, 2.0, self.spectrum.eigenvalues

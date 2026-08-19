@@ -87,6 +87,16 @@ def discrete_measurement_noise(
     return variance, sqrt(variance)
 
 
+def continuous_measurement_noise_intensity(
+    sigma_m_squared: float, sampling_interval: float
+) -> float:
+    """Return ``sigma_c^2 = sigma_m^2 * Delta t``."""
+
+    sigma_m_squared = _positive("Measurement noise variance", sigma_m_squared)
+    sampling_interval = _positive("Sampling interval", sampling_interval)
+    return sigma_m_squared * sampling_interval
+
+
 def steady_state_clarity_lower_bound(
     sensor_count: int,
     sigma_c_squared: float,
