@@ -176,7 +176,6 @@ app_ui = ui.page_sidebar(
             .pending { color: #8a5c00; margin-top: 0.6rem; font-size: 0.9rem; }
             .applied { color: #246642; margin-top: 0.6rem; font-size: 0.9rem; }
             .shiny-plot-output { min-height: 330px; }
-            @media (min-width: 1500px) { .hero-purpose { white-space: nowrap; } }
             @media (max-width: 991px) {
                 .design-grid { grid-template-columns: 1fr; grid-template-areas: "configuration" "minimum" "curve"; grid-template-rows: auto; }
                 .curve-card .shiny-plot-output { min-height: 360px; height: 360px !important; }
@@ -197,9 +196,10 @@ app_ui = ui.page_sidebar(
                     "Xinyi Wang, Devansh R. Agrawal, Dimitra Panagou"
                 ),
                 ui.span(
-                    ". It calculates the ",
-                    ui.strong("Steady-State Lower Bound of Averaged Expected Clarity"),
-                    r" \(\bar q_{\Delta^\Pi_\infty}\) to help design sensor networks.",
+                    ". It calculates the continuous-time ",
+                    ui.strong("Steady-State Lower Bound on Expected Spatially Averaged Clarity"),
+                    r" \(\bar q_{\Delta^\Pi_\infty}\), used here as an analytical design surrogate "
+                    r"for the finite-\(\Delta t\) STGPKF.",
                     class_="hero-purpose",
                 ),
             ),
@@ -254,7 +254,7 @@ app_ui = ui.page_sidebar(
                 ui.div(ui.output_ui("noise_values"), class_="metric-detail"),
                 ui.div(
                     ui.span(
-                        "Steady-State Clarity Lower Bound",
+                        "Analytical Surrogate for Expected Spatially Averaged Clarity",
                         ui.br(),
                         ui.HTML(r"\((\bar q_{\Delta^\Pi_\infty})\)"),
                         ":",
@@ -270,12 +270,12 @@ app_ui = ui.page_sidebar(
                 class_="sensing-card",
             ),
             ui.card(
-                ui.card_header("Minimum sensors required"),
+                ui.card_header("Minimum sensors from the analytical criterion"),
                 ui.output_ui("minimum_sensors"),
                 class_="minimum-card",
             ),
             ui.card(
-                ui.card_header("Interactive Sensor-Count Design Curve"),
+                ui.card_header("Analytical Surrogate vs. Sensor Count"),
                 ui.output_plot("clarity_plot", height="100%", fill=True),
                 class_="curve-card",
             ),
@@ -317,7 +317,8 @@ app_ui = ui.page_sidebar(
                     ui.tags.ul(
                         ui.tags.li(
                             "Theorem 7 and Eq. (17) give the continuous-time steady-state covariance "
-                            "upper bound; Theorem 15 gives the finite-grid clarity lower bound ",
+                            "upper bound; Theorem 15 gives the finite-grid lower bound on expected "
+                            "spatially averaged clarity ",
                             ui.HTML(r"\(\bar q_{\Delta^\Pi_\infty}\)"),
                             ".",
                         ),
@@ -328,6 +329,11 @@ app_ui = ui.page_sidebar(
                             ", governed by ",
                             ui.HTML(r"\(\theta=N_r/\sigma_c^2=N_r/(\sigma_m^2\Delta t)\)"),
                             ".",
+                        ),
+                        ui.tags.li(
+                            "For the finite-",
+                            ui.HTML(r"\(\Delta t\)"),
+                            " STGPKF, this continuous-time analytical quantity is used as a design surrogate.",
                         ),
                         class_="assumption-list",
                     ),
@@ -463,12 +469,12 @@ def server(input: Inputs, output: Outputs, session: Session) -> None:
         if clarity >= target:
             return ui.div(
                 ui.span("✓", class_="result-icon", aria_hidden="true"),
-                ui.span(ui.strong("Target Met!"), f" ({clarity:.3f} ≥ {target:.3f})"),
+                ui.span(ui.strong("Analytical Criterion Met"), f" ({clarity:.3f} ≥ {target:.3f})"),
                 class_="result-banner result-pass",
             )
         return ui.div(
             ui.span("×", class_="result-icon", aria_hidden="true"),
-            ui.span(ui.strong("Target Not Met"), f" ({clarity:.3f} < {target:.3f})"),
+            ui.span(ui.strong("Analytical Criterion Not Met"), f" ({clarity:.3f} < {target:.3f})"),
             class_="result-banner result-fail",
         )
 
@@ -486,7 +492,7 @@ def server(input: Inputs, output: Outputs, session: Session) -> None:
             return ui.div(
                 ui.h3(f"> {MAXIMUM_SENSORS}"),
                 design_criterion,
-                ui.p("The analytical lower bound does not reach the selected target within the search range."),
+                ui.p("The analytical surrogate does not reach the selected target within the search range."),
             )
         sensor_count, _ = result
         return ui.div(
@@ -548,7 +554,7 @@ def server(input: Inputs, output: Outputs, session: Session) -> None:
             axis.set_xlim(1, plot_maximum)
             axis.set_ylim(0.0, 1.0)
             axis.set_xlabel(r"Number of Sensors ($N_r$)")
-            axis.set_ylabel("Clarity")
+            axis.set_ylabel("Analytical clarity surrogate")
             axis.grid(True, which="both", linestyle="--", alpha=0.5)
             axis.legend()
             fig.tight_layout()
