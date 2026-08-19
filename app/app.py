@@ -249,21 +249,52 @@ app_ui = ui.page_sidebar(
                 ui.output_ui("minimum_sensors"),
             ),
             ui.card(
-                ui.card_header("Theoretical basis and assumptions"),
-                ui.p(r"Theorem 7 and Eq. (17) give the closed-form Riccati solution. Theorem 20 characterizes the grid-refinement limit of \(\bar q_{\Delta^\Pi_\infty}\)."),
-                ui.p(r"This app computes its finite-grid counterpart with \(\theta=N_r/\sigma_c^2=N_r/(\sigma_m^2\Delta t)\)."),
+                ui.card_header("Assumptions and conclusion"),
+                ui.h5("Assumptions", class_="mb-2"),
                 ui.tags.ul(
                     ui.tags.li(
-                        "Matérn-1/2 spatial and temporal kernels with ",
+                        "Matérn-1/2 spatial and temporal kernels, with ",
                         ui.HTML(r"\(B_0=1\)"),
                         " and ",
                         ui.HTML(r"\(q_c=1\)"),
                         ".",
                     ),
-                    ui.tags.li("Sensors are sampled independently and uniformly from the grid at each sensing time."),
-                    ui.tags.li("The spatial domain is square and sensing locations lie on the grid."),
-                    ui.tags.li("The result is a continuous-time steady-state clarity lower bound, not a discrete-filter realization."),
+                    ui.tags.li(
+                        "The spatial domain is square and discretized by a uniform grid; "
+                        "all sensing locations lie on the grid."
+                    ),
+                    ui.tags.li(
+                        "At each sensing time, ",
+                        ui.HTML(r"\(N_r\)"),
+                        " sensor locations are sampled independently and uniformly from the grid.",
+                    ),
+                    ui.tags.li(
+                        "The measurement model uses the continuous-time noise intensity ",
+                        ui.HTML(r"\(\sigma_c^2=\sigma_m^2\Delta t\)"),
+                        ".",
+                    ),
                     class_="assumption-list",
+                ),
+                ui.h5("Conclusion", class_="mt-3 mb-2"),
+                ui.p(
+                    "Under these assumptions, Theorem 7 and Eq. (17) give the closed-form "
+                    "continuous-time steady-state covariance upper bound. Theorem 15 then gives "
+                    "the finite-grid lower bound on expected spatially averaged clarity ",
+                    ui.HTML(r"\(\bar q_{\Delta^\Pi_\infty}\)"),
+                    ".",
+                ),
+                ui.p(
+                    "Theorem 20 shows that, with the environment fixed, this clarity lower "
+                    "bound converges to a finite grid-independent limit as ",
+                    ui.HTML(r"\(\delta\to0\)"),
+                    ". The limit is governed by ",
+                    ui.HTML(r"\(\theta=N_r/\sigma_c^2=N_r/(\sigma_m^2\Delta t)\)"),
+                    ".",
+                ),
+                ui.p(
+                    "This app reports the finite-grid continuous-time steady-state lower bound; "
+                    "it is not a discrete-filter realization or a Monte Carlo estimate.",
+                    class_="finite-grid-note mb-0",
                 ),
             ),
             col_widths=(4, 8),
