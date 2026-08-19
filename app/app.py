@@ -316,17 +316,43 @@ def server(input: Inputs, output: Outputs, session: Session) -> None:
             ]
         )
 
-        fig, axis = plt.subplots(figsize=(7.2, 4.1))
-        axis.plot(sensor_counts, clarity_values, color="steelblue", linewidth=2.0, label=r"$\bar q_{\Delta^\Pi_\infty}$")
-        axis.axhline(target, color="#d9534f", linestyle="--", linewidth=1.5, label=r"$q_{\mathrm{target}}$")
-        axis.axvline(sensor_count, color="#2f855a", linestyle=":", linewidth=1.6, label=rf"Current $N_r={sensor_count}$")
-        axis.set_xlim(1, plot_maximum)
-        axis.set_ylim(0.0, 1.0)
-        axis.set_xlabel(r"Number of sensors $N_r$")
-        axis.set_ylabel("Clarity lower bound")
-        axis.legend(frameon=True, fontsize=9, loc="lower right")
-        axis.spines["top"].set_visible(False)
-        axis.spines["right"].set_visible(False)
+        with plt.rc_context(
+            {
+                "font.family": "sans-serif",
+                "font.sans-serif": ["DejaVu Sans"],
+                "mathtext.fontset": "dejavusans",
+                "font.size": 10.0,
+            }
+        ):
+            fig, axis = plt.subplots(figsize=(6.0, 3.0))
+            marker_spacing = max(1, len(sensor_counts) // 50)
+            axis.plot(
+                sensor_counts,
+                clarity_values,
+                color="blue",
+                marker=".",
+                markevery=marker_spacing,
+                label=r"$\bar q_{\Delta^\Pi_\infty}$",
+            )
+            axis.axhline(
+                target,
+                color="red",
+                linestyle="--",
+                label=r"$q_{\mathrm{target}}$",
+            )
+            axis.axvline(
+                sensor_count,
+                color="green",
+                linestyle=":",
+                label=rf"Current $N_r={sensor_count}$",
+            )
+            axis.set_xlim(1, plot_maximum)
+            axis.set_ylim(0.0, 1.0)
+            axis.set_xlabel(r"Number of Sensors ($N_r$)")
+            axis.set_ylabel("Clarity")
+            axis.grid(True, which="both", linestyle="--", alpha=0.5)
+            axis.legend()
+            fig.tight_layout()
         return fig
 
 
