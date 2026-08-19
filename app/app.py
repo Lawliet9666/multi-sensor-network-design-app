@@ -169,8 +169,7 @@ app_ui = ui.page_sidebar(
             .theory-card { margin-bottom: 0; }
             .theory-grid { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 1rem; }
             .theory-block { background: #f8fafc; border: 1px solid #e6ebf2; border-radius: 0.7rem; padding: 1rem 1.1rem; }
-            .theory-heading { display: flex; align-items: center; gap: 0.55rem; color: var(--ink); font-size: 1rem; font-weight: 650; margin: 0 0 0.75rem; }
-            .theory-heading::before { content: ""; width: 0.2rem; height: 1.05rem; border-radius: 999px; background: var(--accent); }
+            .theory-heading { color: var(--ink); font-size: 1rem; font-weight: 650; margin: 0 0 0.75rem; }
             .assumption-list { color: var(--muted); font-size: 0.9rem; line-height: 1.55; margin: 0; padding-left: 1.2rem; }
             .assumption-list li + li { margin-top: 0.35rem; }
             .conclusion-copy { color: #354056; font-size: 0.9rem; line-height: 1.55; }
