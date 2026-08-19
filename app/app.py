@@ -160,12 +160,33 @@ app_ui = ui.page_sidebar(
             .result-fail { background: #fff1f0; color: #8e2a23; border: 0; }
             .sensor-design-equation { font-size: 1rem; overflow-x: auto; }
             .sensor-design-equation mjx-container[display="true"] { margin: 0.55rem 0 !important; }
-            .sidebar-note, .assumption-list, .finite-grid-note { color: var(--muted); font-size: 0.9rem; }
+            .design-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: "configuration curve" "minimum curve"; grid-template-rows: auto minmax(0, auto); gap: 1rem; align-items: stretch; margin-bottom: 1rem; }
+            .design-grid > .card { margin: 0; }
+            .sensing-card { grid-area: configuration; }
+            .minimum-card { grid-area: minimum; }
+            .curve-card { grid-area: curve; min-height: 0; }
+            .curve-card .shiny-plot-output { flex: 1 1 auto; min-height: 430px; height: 100% !important; }
+            .theory-card { margin-bottom: 0; }
+            .theory-grid { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 1rem; }
+            .theory-block { background: #f8fafc; border: 1px solid #e6ebf2; border-radius: 0.7rem; padding: 1rem 1.1rem; }
+            .theory-heading { display: flex; align-items: center; gap: 0.55rem; color: var(--ink); font-size: 1rem; font-weight: 650; margin: 0 0 0.75rem; }
+            .theory-heading::before { content: ""; width: 0.2rem; height: 1.05rem; border-radius: 999px; background: var(--accent); }
+            .assumption-list { color: var(--muted); font-size: 0.9rem; line-height: 1.55; margin: 0; padding-left: 1.2rem; }
+            .assumption-list li + li { margin-top: 0.35rem; }
+            .conclusion-copy { color: #354056; font-size: 0.9rem; line-height: 1.55; }
+            .conclusion-copy p { margin-bottom: 0.65rem; }
+            .scope-note { color: var(--muted); background: #eef3fa; border-radius: 0.5rem; padding: 0.65rem 0.75rem; font-size: 0.86rem; line-height: 1.45; }
+            .sidebar-note { color: var(--muted); font-size: 0.9rem; }
             .pending { color: #8a5c00; margin-top: 0.6rem; font-size: 0.9rem; }
             .applied { color: #246642; margin-top: 0.6rem; font-size: 0.9rem; }
             .shiny-plot-output { min-height: 330px; }
             @media (min-width: 1500px) { .hero-purpose { white-space: nowrap; } }
-            @media (max-width: 768px) { .hero h1 { font-size: 1.65rem; } .metric-value { font-size: 1.45rem; } }
+            @media (max-width: 991px) {
+                .design-grid { grid-template-columns: 1fr; grid-template-areas: "configuration" "minimum" "curve"; grid-template-rows: auto; }
+                .curve-card .shiny-plot-output { min-height: 360px; height: 360px !important; }
+                .theory-grid { grid-template-columns: 1fr; }
+            }
+            @media (max-width: 768px) { .hero h1 { font-size: 1.65rem; } }
             """
         ),
     ),
@@ -188,7 +209,7 @@ app_ui = ui.page_sidebar(
             ),
             class_="hero",
         ),
-        ui.layout_columns(
+        ui.div(
             ui.card(
                 ui.card_header("Sensing configuration"),
                 ui.input_numeric(
@@ -251,68 +272,81 @@ app_ui = ui.page_sidebar(
                     class_="metric-row",
                 ),
                 ui.output_ui("target_status"),
+                class_="sensing-card",
             ),
-            ui.card(
-                ui.card_header("Interactive Sensor-Count Design Curve"),
-                ui.output_plot("clarity_plot", height="390px"),
-            ),
-            col_widths=(6, 6),
-        ),
-        ui.layout_columns(
             ui.card(
                 ui.card_header("Minimum sensors required"),
                 ui.output_ui("minimum_sensors"),
+                class_="minimum-card",
             ),
             ui.card(
-                ui.card_header("Assumptions and conclusion"),
-                ui.h5("Assumptions", class_="mb-2"),
-                ui.tags.ul(
-                    ui.tags.li(
-                        "Matérn-1/2 spatial and temporal kernels, with ",
-                        ui.HTML(r"\(B_0=1\)"),
-                        " and ",
-                        ui.HTML(r"\(q_c=1\)"),
-                        ".",
-                    ),
-                    ui.tags.li(
-                        "The spatial domain is square and discretized by a uniform grid; "
-                        "all sensing locations lie on the grid."
-                    ),
-                    ui.tags.li(
-                        "At each sensing time, ",
-                        ui.HTML(r"\(N_r\)"),
-                        " sensor locations are sampled independently and uniformly from the grid.",
-                    ),
-                    ui.tags.li(
-                        "The measurement model uses the continuous-time noise intensity ",
-                        ui.HTML(r"\(\sigma_c^2=\sigma_m^2\Delta t\)"),
-                        ".",
-                    ),
-                    class_="assumption-list",
-                ),
-                ui.h5("Conclusion", class_="mt-3 mb-2"),
-                ui.p(
-                    "Under these assumptions, Theorem 7 and Eq. (17) give the closed-form "
-                    "continuous-time steady-state covariance upper bound. Theorem 15 then gives "
-                    "the finite-grid lower bound on expected spatially averaged clarity ",
-                    ui.HTML(r"\(\bar q_{\Delta^\Pi_\infty}\)"),
-                    ".",
-                ),
-                ui.p(
-                    "Theorem 20 shows that, with the environment fixed, this clarity lower "
-                    "bound converges to a finite grid-independent limit as ",
-                    ui.HTML(r"\(\delta\to0\)"),
-                    ". The limit is governed by ",
-                    ui.HTML(r"\(\theta=N_r/\sigma_c^2=N_r/(\sigma_m^2\Delta t)\)"),
-                    ".",
-                ),
-                ui.p(
-                    "This app reports the finite-grid continuous-time steady-state lower bound; "
-                    "it is not a discrete-filter realization or a Monte Carlo estimate.",
-                    class_="finite-grid-note mb-0",
-                ),
+                ui.card_header("Interactive Sensor-Count Design Curve"),
+                ui.output_plot("clarity_plot", height="100%", fill=True),
+                class_="curve-card",
             ),
-            col_widths=(4, 8),
+            class_="design-grid",
+        ),
+        ui.card(
+            ui.card_header("Assumptions and conclusion"),
+            ui.div(
+                ui.tags.section(
+                    ui.h5("Assumptions", class_="theory-heading"),
+                    ui.tags.ul(
+                        ui.tags.li(
+                            "Matérn-1/2 spatial and temporal kernels, with ",
+                            ui.HTML(r"\(B_0=1\)"),
+                            " and ",
+                            ui.HTML(r"\(q_c=1\)"),
+                            ".",
+                        ),
+                        ui.tags.li(
+                            "The spatial domain is square and discretized by a uniform grid; "
+                            "all sensing locations lie on the grid."
+                        ),
+                        ui.tags.li(
+                            "At each sensing time, ",
+                            ui.HTML(r"\(N_r\)"),
+                            " sensor locations are sampled independently and uniformly from the grid.",
+                        ),
+                        ui.tags.li(
+                            "The measurement model uses the continuous-time noise intensity ",
+                            ui.HTML(r"\(\sigma_c^2=\sigma_m^2\Delta t\)"),
+                            ".",
+                        ),
+                        class_="assumption-list",
+                    ),
+                    class_="theory-block",
+                ),
+                ui.tags.section(
+                    ui.h5("Conclusion", class_="theory-heading"),
+                    ui.div(
+                        ui.p(
+                            "Under these assumptions, Theorem 7 and Eq. (17) give the closed-form "
+                            "continuous-time steady-state covariance upper bound. Theorem 15 then gives "
+                            "the finite-grid lower bound on expected spatially averaged clarity ",
+                            ui.HTML(r"\(\bar q_{\Delta^\Pi_\infty}\)"),
+                            ".",
+                        ),
+                        ui.p(
+                            "Theorem 20 shows that, with the environment fixed, this clarity lower "
+                            "bound converges to a finite grid-independent limit as ",
+                            ui.HTML(r"\(\delta\to0\)"),
+                            ". The limit is governed by ",
+                            ui.HTML(r"\(\theta=N_r/\sigma_c^2=N_r/(\sigma_m^2\Delta t)\)"),
+                            ".",
+                        ),
+                        class_="conclusion-copy",
+                    ),
+                    ui.div(
+                        ui.strong("Scope: "),
+                        "finite-grid continuous-time steady-state lower bound; not a discrete-filter realization or Monte Carlo estimate.",
+                        class_="scope-note",
+                    ),
+                    class_="theory-block",
+                ),
+                class_="theory-grid",
+            ),
+            class_="theory-card",
         ),
         class_="container-fluid px-3 px-lg-4 pb-4",
     ),
