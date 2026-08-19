@@ -39,7 +39,9 @@ jobs:
         run: python -m unittest discover -s tests -v
 
       - name: Export Shinylive site
-        run: shinylive export app site --template-params '{"title": "STGPKF Sensor Design"}'
+        run: >-
+          shinylive export app site
+          --template-params '{"title": "STGPKF Sensor Design"}'
 
       - name: Configure GitHub Pages
         if: github.ref == 'refs/heads/main'
